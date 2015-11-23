@@ -143,7 +143,6 @@ void follow_segment(){
 	  
 	  set_motor(1, leftMotorSpeed);
 	  set_motor(0, rightMotorSpeed);
-	  move_motors(leftMotorSpeed, rightMotorSpeed);
 	  /*
 		long int error = line_position - 2500;
 		int range_adj = Kp * error + Kd * (error-last_error);
@@ -167,45 +166,37 @@ void sensor_calibration(){
 }
 void forward() {
 	steering.write(90); // the steering wheels are straight
-	set_motor(2, DEFAULT_SPEED); // DRV motors, drive motors forward
-	move_motors(DEFAULT_SPEED, DEFAULT_SPEED); // Toshiba hbridge motors, motors forward
+	set_motor(2, DEFAULT_SPEED); // DRV motors, drive motors forward // Toshiba hbridge motors, motors forward
 }
 void reverse() {
   steering.write(90); // the steering wheels are straight
   set_motor(2, DEFAULT_SPEED*(-1)); // DRV motors, negative speed to reverse
-  move_motors(DEFAULT_SPEED*(-1), DEFAULT_SPEED*(-1)); // Toshiba hbridge motors, reverse
 }
 
 void turnRight() {
   steering.write(180); // the steering wheels so the car turns right
   set_motor(2, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
-  move_motors(DEFAULT_SPEED, DEFAULT_SPEED); 
+ 
 }
 void turnLeft() {
   steering.write(0); // the steering wheels so the car turns left
   set_motor(2, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
-  move_motors(DEFAULT_SPEED, DEFAULT_SPEED);
+
 }
 
 void stopRobot() { //Stop the robot!
 	steering.write(90); // the steering wheels are straight
 	set_motor(2, 0); // all drive motors stopped
-	analogWrite(LEFT_MOTOR_FW, 0);
-	analogWrite(LEFT_MOTOR_RV, 0);
-	analogWrite(RIGHT_MOTOR_FW, 0);
-	analogWrite(RIGHT_MOTOR_RV, 0);
 }
 void turnAroundRight() // Turn that robot around!
 {
 	steering.write(180); // turn the steering right 
 	set_motor(2, DEFAULT_SPEED); // and just drive motors
-	move_motors(DEFAULT_SPEED, DEFAULT_SPEED);
 }
 void turnAroundLeft()
 {
 	steering.write(0); // turn the steering left 
 	set_motor(2, DEFAULT_SPEED); // and just drive motors
-	move_motors(DEFAULT_SPEED, DEFAULT_SPEED);
 }
 
 //===================================================================================
@@ -250,54 +241,4 @@ void set_motor(int side, int motorspeed)
  		motors.setM1Speed(motorSpeed);
  		motors.setM2Speed(motorSpeed);
  	}
-}
-void move_motors(double left_speed, double right_speed) 
-{
-  if (left_speed > MAX_SPEED) {
-    left_speed = MAX_SPEED;
-  }
-  if (right_speed > MAX_SPEED) {
-    right_speed = MAX_SPEED;
-  }
-
-  if (left_speed < 0 && right_speed > 0) {
-    left_speed = abs(left_speed);
-    if (left_speed > MAX_SPEED) {
-      left_speed = MAX_SPEED;
-    }
-    analogWrite(LEFT_MOTOR_FW, 0);
-    analogWrite(LEFT_MOTOR_RV, left_speed);
-    analogWrite(RIGHT_MOTOR_FW, right_speed);
-    analogWrite(RIGHT_MOTOR_RV, 0);
-  }
-  else if (right_speed < 0 && left_speed > 0) {
-    right_speed = abs(right_speed);
-    if (right_speed > MAX_SPEED) {
-      right_speed = MAX_SPEED;
-    }
-    analogWrite(LEFT_MOTOR_FW, left_speed);
-    analogWrite(LEFT_MOTOR_RV, 0);
-    analogWrite(RIGHT_MOTOR_FW, 0);
-    analogWrite(RIGHT_MOTOR_RV, right_speed);
-  }
-  else if (left_speed < 0 && right_speed < 0) {
-    left_speed = abs(left_speed);
-    right_speed = abs(right_speed);
-    if (left_speed > MAX_SPEED) {
-      left_speed = MAX_SPEED;
-    }
-    if (right_speed > MAX_SPEED) {
-      right_speed = MAX_SPEED;
-    }
-    analogWrite(LEFT_MOTOR_FW, 0);
-    analogWrite(LEFT_MOTOR_RV, left_speed);
-    analogWrite(RIGHT_MOTOR_FW, 0);
-    analogWrite(RIGHT_MOTOR_RV, right_speed);
-  }
-  else if (left_speed > 0 && right_speed > 0) {
-    analogWrite(LEFT_MOTOR_FW, left_speed);
-    analogWrite(LEFT_MOTOR_RV, 0);
-    analogWrite(RIGHT_MOTOR_FW, right_speed);
-    analogWrite(RIGHT_MOTOR_RV, 0);
-  }
 }
