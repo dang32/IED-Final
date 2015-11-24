@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include "QTRSensors.h"
 #include "Ultrasonic.h"
-#include <Battery.h>
+#include "Battery.h"
 #include <Wire.h>
 #include "DRV8835MotorShield.h"
 
@@ -12,9 +12,9 @@
 
 // Gains for the line follower segment
 #define Kp .25
-#define Kd .25 
+#define Kd .25
 
-// Motor speed and pins 
+// Motor speed and pins
 #define DEFAULT_SPEED 150 // Default speed, may need a different one for the two pairs of motors
 #define MAX_SPEED 200 // Max Speed
 #define LEFT_MOTOR_FW 8 // set left motor forward pin
@@ -33,16 +33,16 @@
 #define DEBUG 1 // set to 1 if serial debug output needed
 
 DRV8835MotorShield motors; // The H bridge for the motors
-Servo steering(); // Handles the steering servo motor
+Servo steering; // Handles the steering servo motor
 
-Ultrasonic left_range(35,34); // Trigger Pin, Echo Pin of left ranger
-Ultrasonic right_range(25,24); // Trigger Pin, Echo Pin of right ranger
-Ultrasonic front_range(23,22); // Trigger Pin, Echo Pin of left ranger 
+Ultrasonic left_range(32,33); // Trigger Pin, Echo Pin of left ranger
+Ultrasonic right_range(28,29); // Trigger Pin, Echo Pin of right ranger
+Ultrasonic front_range(22,23); // Trigger Pin, Echo Pin of left ranger
 
 Battery battery(3400, 4600, A0, 3); // Pulled from Battery.h git's example
 
 QTRSensorsRC qtrrc((unsigned char[]) {2, 3, 4, 13}, NUM_SENSORS, TIMEOUT, EMITTER_PIN); // IR sensor, {} contain pins of the sensors
-unsigned int sensors[NUM_SENSORS]; 
+unsigned int sensors[NUM_SENSORS];
 
 void sensor_calibration();
 void follow_segment();
@@ -81,7 +81,7 @@ void loop(){
 	{
 		if(left_range.Ranging(CM) > threshold && (left_range.Ranging(CM) < right_range.Ranging(CM)))
 		{
-			// if it's blocked in the front and the left side has less obstacles, it'll turn left. 
+			// if it's blocked in the front and the left side has less obstacles, it'll turn left.
 			turnLeft();
 			delay(500);
 		}
@@ -92,8 +92,8 @@ void loop(){
 			delay(500);
 		}
 		else // if they are equally obstructed
-		{ 
-			while (right_range.Ranging(CM) < threshold && left_range < threshold)
+		{
+			while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
 			{
 				reverse(); // reverse so you don't bump anything if you are blocked on all sides
 				delay(500); // set the delay to whatever it takes for it
@@ -122,11 +122,11 @@ void loop(){
 // LINE FOLLOWER SEGMENT
 //===================================================================================
 void follow_segment(){
-	// Since we're using white tape on black surface, we need to figure out what the 
-	// LIGHT reflectance values are and set a threshold for that. This was just an example. 
+	// Since we're using white tape on black surface, we need to figure out what the
+	// LIGHT reflectance values are and set a threshold for that. This was just an example.
 	// Basically if we don't detect the white tape, you need to just keep moving forward.
-	if (sensorValues[0] < DARK && sensorValues[1] < DARK && sensorValues[2] < DARK &&
-      sensorValues[3] < DARK) 
+	if (sensors[0] < DARK && sensors[1] < DARK && sensors[2] < DARK &&
+      sensors[3] < DARK)
 	{
 	    // go straight
 	    forward();
@@ -137,10 +137,10 @@ void follow_segment(){
 	  long int error = line_position - 2500;
 	  int motorSpeed = Kp * error + Kd * (error - last_error);
 	  last_error = error;
-	  
+
 	  int rightMotorSpeed = DEFAULT_SPEED + motorSpeed;
 	  int leftMotorSpeed = DEFAULT_SPEED - motorSpeed;
-	  
+
 	  set_motor(1, leftMotorSpeed);
 	  set_motor(0, rightMotorSpeed);
 	  /*
@@ -148,7 +148,7 @@ void follow_segment(){
 		int range_adj = Kp * error + Kd * (error-last_error);
 		last_error = error;
 
-		steering = 
+		steering =
 	  */
 	}
 }
@@ -157,7 +157,7 @@ void follow_segment(){
 // FUNCTIONS TO DRIVE CAR AND CALBIRATE SENSOR
 //===================================================================================
 void sensor_calibration(){
-    qtrrc.calibrate();      
+    qtrrc.calibrate();
     // Since our counter runs to 90, the total delay will be
     // 90*20 = 1800 ms.
     delay(20);
@@ -176,7 +176,7 @@ void reverse() {
 void turnRight() {
   steering.write(180); // the steering wheels so the car turns right
   set_motor(2, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
- 
+
 }
 void turnLeft() {
   steering.write(0); // the steering wheels so the car turns left
@@ -190,12 +190,12 @@ void stopRobot() { //Stop the robot!
 }
 void turnAroundRight() // Turn that robot around!
 {
-	steering.write(180); // turn the steering right 
+	steering.write(180); // turn the steering right
 	set_motor(2, DEFAULT_SPEED); // and just drive motors
 }
 void turnAroundLeft()
 {
-	steering.write(0); // turn the steering left 
+	steering.write(0); // turn the steering left
 	set_motor(2, DEFAULT_SPEED); // and just drive motors
 }
 
@@ -205,16 +205,16 @@ void turnAroundLeft()
 void set_motor(int side, int motorspeed)
 {
   if (motorspeed > MAX_SPEED ) motorspeed = MAX_SPEED; // limit top speed
-  
+
 	if (side == 0) // May have to switch 0 and 1 for left and right motors
 	{
 		if (motorspeed < 0)
 		{
 			motors.setM1Speed(motorspeed);
 		}
-		if (motorspeed == 0) 
+		if (motorspeed == 0)
 		{
-			motors.setM1Speed(motorspeed);      
+			motors.setM1Speed(motorspeed);
 		}
 		if ( motorspeed > 0)
 		{
