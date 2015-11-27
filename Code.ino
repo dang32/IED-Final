@@ -17,10 +17,10 @@
 // Motor speed and pins
 #define DEFAULT_SPEED 150 // Default speed, may need a different one for the two pairs of motors
 #define MAX_SPEED 200 // Max Speed
-#define LEFT_MOTOR_FW 8 // set left motor forward pin
-#define LEFT_MOTOR_RV 9 // set left motor reverse pin
-#define RIGHT_MOTOR_FW 10 // set right motor forward pin
-#define RIGHT_MOTOR_RV 11 // set right motor reverse pin
+#define LEFT_MOTOR_FW 7 // set left motor forward pin
+#define LEFT_MOTOR_RV 8 // set left motor reverse pin
+#define RIGHT_MOTOR_FW 9 // set right motor forward pin
+#define RIGHT_MOTOR_RV 10 // set right motor reverse pin
 
 // Threshold for battery
 #define battery_threshold 200
