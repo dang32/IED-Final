@@ -17,17 +17,11 @@
 // Motor speed and pins
 #define DEFAULT_SPEED 150 // Default speed, may need a different one for the two pairs of motors
 #define MAX_SPEED 200 // Max Speed
-<<<<<<< HEAD
+
 #define LEFT_MOTOR_FW 9 // set left motor forward pin
 #define LEFT_MOTOR_RV 10 // set left motor reverse pin
 #define RIGHT_MOTOR_FW 7 // set right motor forward pin
 #define RIGHT_MOTOR_RV 8 // set right motor reverse pin
-=======
-#define LEFT_MOTOR_FW 7 // set left motor forward pin
-#define LEFT_MOTOR_RV 8 // set left motor reverse pin
-#define RIGHT_MOTOR_FW 9 // set right motor forward pin
-#define RIGHT_MOTOR_RV 10 // set right motor reverse pin
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 
 // Threshold for battery
 #define battery_threshold 200
@@ -51,9 +45,9 @@ Battery battery(3400, 4600, A0, 3); // Pulled from Battery.h git's example
 QTRSensorsRC qtrrc((unsigned char[]) {2, 3, 4, 13}, NUM_SENSORS, TIMEOUT, EMITTER_PIN); // IR sensor, {} contain pins of the sensors
 unsigned int sensors[NUM_SENSORS];
 
-<<<<<<< HEAD
 //void sensor_calibration();
 //void follow_segment();
+
 void stopRobot();
 void reverse();
 void forward();
@@ -61,10 +55,7 @@ void turnLeft();
 void turnRight();
 void turnAroundLeft();
 void turnAroundRight();
-=======
-void sensor_calibration();
-void follow_segment();
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
+
 void set_motor(char side, int motorspeed);
 void move_motors(double left_speed, double right_speed);
 
@@ -82,11 +73,8 @@ void setup()
 	pinMode(RIGHT_MOTOR_FW, OUTPUT);  // right motor forward
 	pinMode(RIGHT_MOTOR_RV, OUTPUT); // right motor reverse
 	stopRobot();
-<<<<<<< HEAD
+
 //	sensor_calibration();
-=======
-	sensor_calibration();
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 }
 void loop(){
    	if (front_range.Ranging(CM) < safety)
@@ -102,26 +90,16 @@ void loop(){
 	}
 	if (front_range.Ranging(CM) < threshold)
 	{
-<<<<<<< HEAD
 		if(left_range.Ranging(CM) > threshold && (left_range.Ranging(CM) > right_range.Ranging(CM)))
 		{
                         Serial.println("Turn Left\n");
-=======
-		if(left_range.Ranging(CM) > threshold && (left_range.Ranging(CM) < right_range.Ranging(CM)))
-		{
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 			// if it's blocked in the front and the left side has less obstacles, it'll turn left.
 			turnLeft();
 			delay(500);
 		}
-<<<<<<< HEAD
 		else if (right_range.Ranging(CM) > threshold && (right_range.Ranging(CM) > left_range.Ranging(CM)))
 		{
                         Serial.println("Turn Right\n");
-=======
-		else if (right_range.Ranging(CM) > threshold && (right_range.Ranging(CM) < left_range.Ranging(CM)))
-		{
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 			// if it's blocked in the front and the right side has less obstacles, it'll turn right.
 			turnRight();
 			delay(500);
@@ -130,29 +108,20 @@ void loop(){
 		{
 			while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
 			{
-<<<<<<< HEAD
                                 Serial.println("Reverse\n");
-=======
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 				reverse(); // reverse so you don't bump anything if you are blocked on all sides
 				delay(500); // set the delay to whatever it takes for it
 			}
 			// Get out of there, do a 180!
 			if (left_range.Ranging(CM) < right_range.Ranging(CM))
 			{
-<<<<<<< HEAD
                                 Serial.println("Turn Around Left\n");
-=======
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 				turnAroundLeft(); // if the left side is clearer, turn around using the left side
 				delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
 			}
 			if (right_range.Ranging(CM) < left_range.Ranging(CM))
 			{
-<<<<<<< HEAD
                                 Serial.println("Turn Around Right\n");
-=======
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 				turnAroundRight(); // if the right side is clearer, turn around using the right side
 				delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
 			}
@@ -164,11 +133,7 @@ void loop(){
   	follow_segment(); // go to line follower function
   }*/
 }
-<<<<<<< HEAD
 /*
-=======
-
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 //===================================================================================
 // LINE FOLLOWER SEGMENT
 //===================================================================================
@@ -194,17 +159,12 @@ void follow_segment(){
 
 	  set_motor(1, leftMotorSpeed);
 	  set_motor(0, rightMotorSpeed);
-<<<<<<< HEAD
 	  
-=======
-	  /*
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 		long int error = line_position - 2500;
 		int range_adj = Kp * error + Kd * (error-last_error);
 		last_error = error;
 
 		steering =
-<<<<<<< HEAD
 	  
 	}
 }
@@ -213,27 +173,13 @@ void follow_segment(){
 // FUNCTIONS TO DRIVE CAR AND CALBIRATE SENSOR
 //===================================================================================
 /*void sensor_calibration(){
-=======
-	  */
-	}
-}
-
-//===================================================================================
-// FUNCTIONS TO DRIVE CAR AND CALBIRATE SENSOR
-//===================================================================================
-void sensor_calibration(){
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
     qtrrc.calibrate();
     // Since our counter runs to 90, the total delay will be
     // 90*20 = 1800 ms.
     delay(20);
     stopRobot();
 	delay(2000);
-<<<<<<< HEAD
 }*/
-=======
-}
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
 void forward() {
 	steering.write(90); // the steering wheels are straight
 	set_motor(2, DEFAULT_SPEED); // DRV motors, drive motors forward // Toshiba hbridge motors, motors forward
@@ -308,12 +254,7 @@ void set_motor(int side, int motorspeed)
  	}
  	else
  	{
-<<<<<<< HEAD
  		motors.setM1Speed(-motorspeed);
  		motors.setM2Speed(-motorspeed);
-=======
- 		motors.setM1Speed(motorSpeed);
- 		motors.setM2Speed(motorSpeed);
->>>>>>> 7a4a3bd4f93d96cc15015578ab9f7a1797f0a6d6
  	}
 }
