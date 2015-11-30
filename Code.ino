@@ -82,6 +82,13 @@ void loop(){
   		// if any point the ranger detects something very close in the front of it, it needs to stop.
 		stopRobot();
 		delay(1000);
+                while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
+			{
+                                Serial.println("Reverse\n");
+				reverse(); // reverse so you don't bump anything if you are blocked on all sides
+				delay(500); // set the delay to whatever it takes for it
+			}
+           
   	}
 	if (front_range.Ranging(CM) > threshold)
 	{
