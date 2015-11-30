@@ -251,6 +251,6 @@ void set_motor(int side, int motorspeed)
  	else
  	{
  		motors.setM1Speed(-motorspeed);
- 		motors.setM2Speed(-\motorspeed);
+ 		motors.setM2Speed(-motorspeed);
  	}
 }
