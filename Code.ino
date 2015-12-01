@@ -7,7 +7,7 @@
 
 
 // Ranger distances
-#define safety 20
+#define safety 30
 #define threshold 50
 
 // Gains for the line follower segment
@@ -15,13 +15,8 @@
 #define Kd .25
 
 // Motor speed and pins
-#define DEFAULT_SPEED 150 // Default speed, may need a different one for the two pairs of motors
+#define DEFAULT_SPEED 200 // Default speed, may need a different one for the two pairs of motors
 #define MAX_SPEED 200 // Max Speed
-
-#define LEFT_MOTOR_FW 9 // set left motor forward pin
-#define LEFT_MOTOR_RV 10 // set left motor reverse pin
-#define RIGHT_MOTOR_FW 7 // set right motor forward pin
-#define RIGHT_MOTOR_RV 8 // set right motor reverse pin
 
 // Threshold for battery
 #define battery_threshold 200
@@ -77,56 +72,70 @@ void setup()
 //	sensor_calibration();
 }
 void loop(){
-   	if (front_range.Ranging(CM) < safety)
+  long frontRange = front_range.Ranging(CM); 
+  long leftRange = left_range.Ranging(CM);
+  long rightRange = right_range.Ranging(CM);
+  for(int i = 0; i < 4; i++) {
+    frontRange += front_range.Ranging(CM);
+    leftRange += left_range.Ranging(CM);
+    rightRange += right_range.Ranging(CM);
+  }
+  frontRange = frontRange/5.0;
+  leftRange = leftRange/5.0;
+  rightRange = rightRange/5.0;
+  
+   	if (frontRange < safety)
   	{
   		// if any point the ranger detects something very close in the front of it, it needs to stop.
 		stopRobot();
-		delay(1000);
-                while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
-			{
-                                Serial.println("Reverse\n");
-				reverse(); // reverse so you don't bump anything if you are blocked on all sides
-				delay(500); // set the delay to whatever it takes for it
-			}
+		//delay(1000);
+//      while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
+//			{
+//        Serial.println("Reverse\n");
+//				reverse(); // reverse so you don't bump anything if you are blocked on all sides
+//			//	delay(500); // set the delay to whatever it takes for it
+//			}
            
   	}
-	if (front_range.Ranging(CM) > threshold)
+	else if (frontRange > threshold)
 	{
 		// if everything's all clear, just keep moving!
-		forward();
+    forward();
+     // delay(1);
+    
 	}
-	if (front_range.Ranging(CM) < threshold)
+	else if (frontRange < threshold)
 	{
-		if(left_range.Ranging(CM) > threshold && (left_range.Ranging(CM) > right_range.Ranging(CM)))
+		if(leftRange > threshold && (leftRange > rightRange))
 		{
                         Serial.println("Turn Left\n");
 			// if it's blocked in the front and the left side has less obstacles, it'll turn left.
 			turnLeft();
-			delay(500);
+		//	delay(500);
 		}
-		else if (right_range.Ranging(CM) > threshold && (right_range.Ranging(CM) > left_range.Ranging(CM)))
+		else if (rightRange > threshold && (rightRange > leftRange))
 		{
                         Serial.println("Turn Right\n");
 			// if it's blocked in the front and the right side has less obstacles, it'll turn right.
 			turnRight();
-			delay(500);
+			//delay(500);
 		}
 		else // if they are equally obstructed
 		{
-			while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
+			while (rightRange < threshold && leftRange < threshold)
 			{
                                 Serial.println("Reverse\n");
 				reverse(); // reverse so you don't bump anything if you are blocked on all sides
-				delay(500); // set the delay to whatever it takes for it
+				//delay(500); // set the delay to whatever it takes for it
 			}
 			// Get out of there, do a 180!
-			if (left_range.Ranging(CM) < right_range.Ranging(CM))
+			if (leftRange < rightRange)
 			{
                                 Serial.println("Turn Around Left\n");
 				turnAroundLeft(); // if the left side is clearer, turn around using the left side
-				delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
+				//delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
 			}
-			if (right_range.Ranging(CM) < left_range.Ranging(CM))
+			if (rightRange < leftRange)
 			{
                                 Serial.println("Turn Around Right\n");
 				turnAroundRight(); // if the right side is clearer, turn around using the right side
