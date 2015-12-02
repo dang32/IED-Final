@@ -7,16 +7,17 @@
 
 
 // Ranger distances
-#define safety 30
-#define threshold 150
+#define safety 15.24
+#define threshold 200
+#define oddMax 500
 
 // Gains for the line follower segment
 #define Kp .25
 #define Kd .25
 
 // Motor speed and pins
-#define DEFAULT_SPEED 400 // Default speed, may need a different one for the two pairs of motors
-#define MAX_SPEED 400 // Max Speed
+#define DEFAULT_SPEED -200 // Default speed, may need a different one for the two pairs of motors
+#define MAX_SPEED -200 // Max Speed
 
 // Threshold for battery
 #define battery_threshold 200
@@ -79,12 +80,13 @@ void loop(){
   frontRange = frontRange/5.0;
   leftRange = leftRange/5.0;
   rightRange = rightRange/5.0;
-  
-  if (frontRange < safety)
+
+  if (frontRange < safety || frontRange > oddMax)
   {
+    Serial.println("Stop");
   		// if any point the ranger detects something very close in the front of it, it needs to stop.
   	stopRobot();
-		delay(250);
+		delay(500);
     while (front_range.Ranging(CM) < safety && front_range.Ranging(CM) < threshold)
 		{
       Serial.println("Reverse\n");
@@ -93,23 +95,24 @@ void loop(){
 		}
            
   }
-	else if (frontRange > threshold)
+//	else if (frontRange > threshold)
+//	{
+//    Serial.println("Forward");
+//		// if everything's all clear, just keep moving!
+//    forward();
+//     // delay(1);
+//    
+//	}
+	else /*if (frontRange < threshold)*/
 	{
-		// if everything's all clear, just keep moving!
-    forward();
-     // delay(1);
-    
-	}
-	else if (frontRange < threshold)
-	{
-		if(/*leftRange > threshold && */(leftRange > rightRange))
+		if(leftRange <= threshold &&  (leftRange > rightRange))
 		{
       Serial.println("Turn Left\n");
 			// if it's blocked in the front and the left side has less obstacles, it'll turn left.
 			turnLeft();
 		//	delay(500);
 		}
-		else if (/*rightRange > threshold && */(rightRange > leftRange))
+		else if (rightRange <= threshold && (rightRange > leftRange))
 		{
       Serial.println("Turn Right\n");
 			// if it's blocked in the front and the right side has less obstacles, it'll turn right.
@@ -118,23 +121,27 @@ void loop(){
 		}
 		else // if they are equally obstructed
 		{
-			while (rightRange < threshold && leftRange < threshold)
+      if (rightRange > threshold && leftRange > threshold) 
+      {
+        Serial.println("Forward");
+      }
+			else if (rightRange < threshold && leftRange < threshold)
 			{
-        Serial.println("Reverse\n");
+        Serial.println("Reverse");
 				reverse(); // reverse so you don't bump anything if you are blocked on all sides
 				//delay(500); // set the delay to whatever it takes for it
 			}
 			// Get out of there, do a 180!
-			if (leftRange < rightRange)
+			else if (leftRange > rightRange)
 			{
-                                Serial.println("Turn Around Left\n");
-				turnAroundLeft(); // if the left side is clearer, turn around using the left side
+        Serial.println("Turn Around Left\n");
+				turnLeft(); // if the left side is clearer, turn around using the left side
 				//delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
 			}
-			if (rightRange < leftRange)
+			else if (rightRange > leftRange)
 			{
-                                Serial.println("Turn Around Right\n");
-				turnAroundRight(); // if the right side is clearer, turn around using the right side
+        Serial.println("Turn Around Right\n");
+				turnRight(); // if the right side is clearer, turn around using the right side
 				//delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
 			}
 		}
@@ -194,21 +201,21 @@ void follow_segment(){
 }*/
 void forward() {
 	steering.write(90); // the steering wheels are straight
-	motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED); // DRV motors, drive motors forward // Toshiba hbridge motors, motors forward
+	motors.setSpeeds(DEFAULT_SPEED, DEFAULT_SPEED); // DRV motors, drive motors forward // Toshiba hbridge motors, motors forward
 }
 void reverse() {
   steering.write(0); // the steering wheels are straight
-  motors.setSpeeds(DEFAULT_SPEED, -DEFAULT_SPEED); // DRV motors, negative speed to reverse
+  motors.setSpeeds(-DEFAULT_SPEED, -DEFAULT_SPEED); // DRV motors, negative speed to reverse
 }
 
 void turnRight() {
   steering.write(180); // the steering wheels so the car turns right
-  motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED);; // May need to change the speeds so it doesn't turn very aggressively and crash
+  motors.setSpeeds(DEFAULT_SPEED, DEFAULT_SPEED);; // May need to change the speeds so it doesn't turn very aggressively and crash
 
 }
 void turnLeft() {
   steering.write(0); // the steering wheels so the car turns left
-  motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
+  motors.setSpeeds(DEFAULT_SPEED, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
 
 }
 
@@ -216,16 +223,18 @@ void stopRobot() { //Stop the robot!
 	steering.write(90); // the steering wheels are straight
 	motors.setSpeeds(0, 0); // all drive motors stopped
 }
-void turnAroundRight() // Turn that robot around!
-{
-	steering.write(180); // turn the steering right
-	motors.setSpeeds(0, 0); // and just drive motors
-}
-void turnAroundLeft()
-{
-	steering.write(0); // turn the steering left
-	motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED); // and just drive motors
-}
+// The functions below are kind of redundant
+
+//void turnAroundRight() // Turn that robot around!
+//{
+//	steering.write(180); // turn the steering right
+//	motors.setSpeeds(0, 0); // and just drive motors
+//}
+//void turnAroundLeft()
+//{
+//	steering.write(0); // turn the steering left
+//	motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED); // and just drive motors
+//}
 
 //===================================================================================
 // SETTING THOSE MOTOR SPEEDS
