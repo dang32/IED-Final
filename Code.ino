@@ -7,21 +7,16 @@
 
 
 // Ranger distances
-#define safety 20
-#define threshold 50
+#define safety 30
+#define threshold 150
 
 // Gains for the line follower segment
 #define Kp .25
 #define Kd .25
 
 // Motor speed and pins
-#define DEFAULT_SPEED 150 // Default speed, may need a different one for the two pairs of motors
+#define DEFAULT_SPEED 200 // Default speed, may need a different one for the two pairs of motors
 #define MAX_SPEED 200 // Max Speed
-
-#define LEFT_MOTOR_FW 9 // set left motor forward pin
-#define LEFT_MOTOR_RV 10 // set left motor reverse pin
-#define RIGHT_MOTOR_FW 7 // set right motor forward pin
-#define RIGHT_MOTOR_RV 8 // set right motor reverse pin
 
 // Threshold for battery
 #define battery_threshold 200
@@ -68,69 +63,79 @@ void setup()
 {
 	Serial.begin(9600);
 	steering.attach(2); // Gotta attach that servo motor
-	pinMode(LEFT_MOTOR_FW, OUTPUT);  // left motor forward
-	pinMode(LEFT_MOTOR_RV, OUTPUT); // left motor reverse
-	pinMode(RIGHT_MOTOR_FW, OUTPUT);  // right motor forward
-	pinMode(RIGHT_MOTOR_RV, OUTPUT); // right motor reverse
 	stopRobot();
 
 //	sensor_calibration();
 }
 void loop(){
-   	if (front_range.Ranging(CM) < safety)
-  	{
+  long frontRange = front_range.Ranging(CM); 
+  long leftRange = left_range.Ranging(CM);
+  long rightRange = right_range.Ranging(CM);
+  for(int i = 0; i < 4; i++) {
+    frontRange += front_range.Ranging(CM);
+    leftRange += left_range.Ranging(CM);
+    rightRange += right_range.Ranging(CM);
+  }
+  frontRange = frontRange/5.0;
+  leftRange = leftRange/5.0;
+  rightRange = rightRange/5.0;
+  
+  if (frontRange < safety)
+  {
   		// if any point the ranger detects something very close in the front of it, it needs to stop.
-		stopRobot();
-		delay(1000);
-                while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
-			{
-                                Serial.println("Reverse\n");
-				reverse(); // reverse so you don't bump anything if you are blocked on all sides
-				delay(500); // set the delay to whatever it takes for it
-			}
+  	stopRobot();
+		delay(250);
+    while (front_range.Ranging(CM) < safety && front_range.Ranging(CM) < threshold)
+		{
+      Serial.println("Reverse\n");
+  		reverse(); // reverse so you don't bump anything if you are blocked on all sides
+			//	delay(500); // set the delay to whatever it takes for it
+		}
            
-  	}
-	if (front_range.Ranging(CM) > threshold)
+  }
+	else if (frontRange > threshold)
 	{
 		// if everything's all clear, just keep moving!
-		forward();
+    forward();
+     // delay(1);
+    
 	}
-	if (front_range.Ranging(CM) < threshold)
+	else if (frontRange < threshold)
 	{
-		if(left_range.Ranging(CM) > threshold && (left_range.Ranging(CM) > right_range.Ranging(CM)))
+		if(/*leftRange > threshold && */(leftRange > rightRange))
 		{
-                        Serial.println("Turn Left\n");
+      Serial.println("Turn Left\n");
 			// if it's blocked in the front and the left side has less obstacles, it'll turn left.
 			turnLeft();
-			delay(500);
+		//	delay(500);
 		}
-		else if (right_range.Ranging(CM) > threshold && (right_range.Ranging(CM) > left_range.Ranging(CM)))
+		else if (/*rightRange > threshold && */(rightRange > leftRange))
 		{
-                        Serial.println("Turn Right\n");
+      Serial.println("Turn Right\n");
 			// if it's blocked in the front and the right side has less obstacles, it'll turn right.
 			turnRight();
-			delay(500);
+			//delay(500);
 		}
 		else // if they are equally obstructed
 		{
-			while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
+			while (rightRange < threshold && leftRange < threshold)
 			{
-                                Serial.println("Reverse\n");
+        Serial.println("Reverse\n");
 				reverse(); // reverse so you don't bump anything if you are blocked on all sides
-				delay(500); // set the delay to whatever it takes for it
+				//delay(500); // set the delay to whatever it takes for it
 			}
 			// Get out of there, do a 180!
-			if (left_range.Ranging(CM) < right_range.Ranging(CM))
+			if (leftRange < rightRange)
 			{
                                 Serial.println("Turn Around Left\n");
 				turnAroundLeft(); // if the left side is clearer, turn around using the left side
-				delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
+				//delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
 			}
-			if (right_range.Ranging(CM) < left_range.Ranging(CM))
+			if (rightRange < leftRange)
 			{
                                 Serial.println("Turn Around Right\n");
 				turnAroundRight(); // if the right side is clearer, turn around using the right side
-				delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
+				//delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
 			}
 		}
 	}
@@ -189,79 +194,79 @@ void follow_segment(){
 }*/
 void forward() {
 	steering.write(90); // the steering wheels are straight
-	set_motor(2, DEFAULT_SPEED); // DRV motors, drive motors forward // Toshiba hbridge motors, motors forward
+	motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED); // DRV motors, drive motors forward // Toshiba hbridge motors, motors forward
 }
 void reverse() {
-  steering.write(90); // the steering wheels are straight
-  set_motor(2, DEFAULT_SPEED*(-1)); // DRV motors, negative speed to reverse
+  steering.write(0); // the steering wheels are straight
+  motors.setSpeeds(DEFAULT_SPEED, -DEFAULT_SPEED); // DRV motors, negative speed to reverse
 }
 
 void turnRight() {
   steering.write(180); // the steering wheels so the car turns right
-  set_motor(2, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
+  motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED);; // May need to change the speeds so it doesn't turn very aggressively and crash
 
 }
 void turnLeft() {
   steering.write(0); // the steering wheels so the car turns left
-  set_motor(2, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
+  motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
 
 }
 
 void stopRobot() { //Stop the robot!
 	steering.write(90); // the steering wheels are straight
-	set_motor(2, 0); // all drive motors stopped
+	motors.setSpeeds(0, 0); // all drive motors stopped
 }
 void turnAroundRight() // Turn that robot around!
 {
 	steering.write(180); // turn the steering right
-	set_motor(2, DEFAULT_SPEED); // and just drive motors
+	motors.setSpeeds(0, 0); // and just drive motors
 }
 void turnAroundLeft()
 {
 	steering.write(0); // turn the steering left
-	set_motor(2, DEFAULT_SPEED); // and just drive motors
+	motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED); // and just drive motors
 }
 
 //===================================================================================
 // SETTING THOSE MOTOR SPEEDS
 //===================================================================================
-void set_motor(int side, int motorspeed)
-{
-  if (motorspeed > MAX_SPEED ) motorspeed = MAX_SPEED; // limit top speed
-
-	if (side == 0) // May have to switch 0 and 1 for left and right motors
-	{
-		if (motorspeed < 0)
-		{
-			motors.setM1Speed(motorspeed);
-		}
-		if (motorspeed == 0)
-		{
-			motors.setM1Speed(motorspeed);
-		}
-		if ( motorspeed > 0)
-		{
-			motors.setM1Speed(motorspeed);
-		}
-	}
-	else if (side == 1)
- 	{
-		if (motorspeed < 0)
-		{
-			motors.setM2Speed(motorspeed);
-		}
-		if (motorspeed == 0)
-		{
-			motors.setM2Speed(motorspeed);
-		}
-		if ( motorspeed > 0)
-		{
-			motors.setM2Speed(motorspeed);
-		}
- 	}
- 	else
- 	{
- 		motors.setM1Speed(-motorspeed);
- 		motors.setM2Speed(-motorspeed);
- 	}
-}
+//void set_motor(int side, int motorspeed)
+//{
+//  if (motorspeed > MAX_SPEED ) motorspeed = MAX_SPEED; // limit top speed
+//
+//	if (side == 0) // May have to switch 0 and 1 for left and right motors
+//	{
+//		if (motorspeed < 0)
+//		{
+//			motors.setM1Speed(motorspeed);
+//		}
+//		if (motorspeed == 0)
+//		{
+//			motors.setM1Speed(motorspeed);
+//		}
+//		if ( motorspeed > 0)
+//		{
+//			motors.setM1Speed(motorspeed);
+//		}
+//	}
+//	else if (side == 1)
+// 	{
+//		if (motorspeed < 0)
+//		{
+//			motors.setM2Speed(motorspeed);
+//		}
+//		if (motorspeed == 0)
+//		{
+//			motors.setM2Speed(motorspeed);
+//		}
+//		if ( motorspeed > 0)
+//		{
+//			motors.setM2Speed(motorspeed);
+//		}
+// 	}
+// 	else
+// 	{
+// 		motors.setM1Speed(-motorspeed);
+// 		motors.setM2Speed(-motorspeed);
+// 	}
+//}
