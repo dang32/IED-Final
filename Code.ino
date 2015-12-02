@@ -8,19 +8,15 @@
 
 // Ranger distances
 #define safety 30
-<<<<<<< HEAD
 #define threshold 150
-=======
-#define threshold 50
->>>>>>> c2aa3d290cc08775929062bfd678776d470563fe
 
 // Gains for the line follower segment
 #define Kp .25
 #define Kd .25
 
 // Motor speed and pins
-#define DEFAULT_SPEED 200 // Default speed, may need a different one for the two pairs of motors
-#define MAX_SPEED 200 // Max Speed
+#define DEFAULT_SPEED 400 // Default speed, may need a different one for the two pairs of motors
+#define MAX_SPEED 400 // Max Speed
 
 // Threshold for battery
 #define battery_threshold 200
@@ -84,7 +80,6 @@ void loop(){
   leftRange = leftRange/5.0;
   rightRange = rightRange/5.0;
   
-<<<<<<< HEAD
   if (frontRange < safety)
   {
   		// if any point the ranger detects something very close in the front of it, it needs to stop.
@@ -98,21 +93,6 @@ void loop(){
 		}
            
   }
-=======
-   	if (frontRange < safety)
-  	{
-  		// if any point the ranger detects something very close in the front of it, it needs to stop.
-		stopRobot();
-		//delay(1000);
-//      while (right_range.Ranging(CM) < threshold && left_range.Ranging(CM) < threshold)
-//			{
-//        Serial.println("Reverse\n");
-//				reverse(); // reverse so you don't bump anything if you are blocked on all sides
-//			//	delay(500); // set the delay to whatever it takes for it
-//			}
-           
-  	}
->>>>>>> c2aa3d290cc08775929062bfd678776d470563fe
 	else if (frontRange > threshold)
 	{
 		// if everything's all clear, just keep moving!
@@ -122,22 +102,14 @@ void loop(){
 	}
 	else if (frontRange < threshold)
 	{
-<<<<<<< HEAD
 		if(/*leftRange > threshold && */(leftRange > rightRange))
-=======
-		if(leftRange > threshold && (leftRange > rightRange))
->>>>>>> c2aa3d290cc08775929062bfd678776d470563fe
 		{
       Serial.println("Turn Left\n");
 			// if it's blocked in the front and the left side has less obstacles, it'll turn left.
 			turnLeft();
 		//	delay(500);
 		}
-<<<<<<< HEAD
 		else if (/*rightRange > threshold && */(rightRange > leftRange))
-=======
-		else if (rightRange > threshold && (rightRange > leftRange))
->>>>>>> c2aa3d290cc08775929062bfd678776d470563fe
 		{
       Serial.println("Turn Right\n");
 			// if it's blocked in the front and the right side has less obstacles, it'll turn right.
