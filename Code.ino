@@ -8,7 +8,7 @@
 
 // Ranger distances
 #define safety 15.24
-#define threshold 200
+#define threshold 75
 #define oddMax 500
 
 // Gains for the line follower segment
@@ -81,14 +81,25 @@ void loop(){
   leftRange = leftRange/5.0;
   rightRange = rightRange/5.0;
 
+//  Serial.println(frontRange);
+//  Serial.println(leftRange);
+//  Serial.println(rightRange);
+//  forward();
   if (frontRange < safety || frontRange > oddMax)
   {
     Serial.println("Stop");
   		// if any point the ranger detects something very close in the front of it, it needs to stop.
   	stopRobot();
 		delay(500);
-    while (front_range.Ranging(CM) < safety && front_range.Ranging(CM) < threshold)
+    long revThresh = threshold+ 30;
+    if (frontRange < revThresh)
 		{
+        frontRange = front_range.Ranging(CM); 
+        for(int i = 0; i < 4; i++) {
+          frontRange += front_range.Ranging(CM);
+        }
+        frontRange = frontRange/5.0;
+      Serial.println(frontRange);
       Serial.println("Reverse\n");
   		reverse(); // reverse so you don't bump anything if you are blocked on all sides
 			//	delay(500); // set the delay to whatever it takes for it
@@ -124,6 +135,7 @@ void loop(){
       if (rightRange > threshold && leftRange > threshold) 
       {
         Serial.println("Forward");
+        forward();
       }
 			else if (rightRange < threshold && leftRange < threshold)
 			{
@@ -204,17 +216,17 @@ void forward() {
 	motors.setSpeeds(DEFAULT_SPEED, DEFAULT_SPEED); // DRV motors, drive motors forward // Toshiba hbridge motors, motors forward
 }
 void reverse() {
-  steering.write(0); // the steering wheels are straight
+  steering.write(180); // the steering wheels are straight
   motors.setSpeeds(-DEFAULT_SPEED, -DEFAULT_SPEED); // DRV motors, negative speed to reverse
 }
 
 void turnRight() {
-  steering.write(180); // the steering wheels so the car turns right
-  motors.setSpeeds(DEFAULT_SPEED, DEFAULT_SPEED);; // May need to change the speeds so it doesn't turn very aggressively and crash
+  steering.write(0); // the steering wheels so the car turns right
+  motors.setSpeeds(DEFAULT_SPEED, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
 
 }
 void turnLeft() {
-  steering.write(0); // the steering wheels so the car turns left
+  steering.write(180); // the steering wheels so the car turns left
   motors.setSpeeds(DEFAULT_SPEED, DEFAULT_SPEED); // May need to change the speeds so it doesn't turn very aggressively and crash
 
 }
@@ -223,18 +235,7 @@ void stopRobot() { //Stop the robot!
 	steering.write(90); // the steering wheels are straight
 	motors.setSpeeds(0, 0); // all drive motors stopped
 }
-// The functions below are kind of redundant
 
-//void turnAroundRight() // Turn that robot around!
-//{
-//	steering.write(180); // turn the steering right
-//	motors.setSpeeds(0, 0); // and just drive motors
-//}
-//void turnAroundLeft()
-//{
-//	steering.write(0); // turn the steering left
-//	motors.setSpeeds(-DEFAULT_SPEED, DEFAULT_SPEED); // and just drive motors
-//}
 
 //===================================================================================
 // SETTING THOSE MOTOR SPEEDS
