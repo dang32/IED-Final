@@ -1,7 +1,6 @@
 #include <Servo.h>
 #include "QTRSensors.h"
 #include "Ultrasonic.h"
-#include "Battery.h"
 #include <Wire.h>
 #include "DRV8835MotorShield.h"
 
@@ -16,8 +15,7 @@
 #define Kd .25
 
 // Motor speed and pins
-#define DEFAULT_SPEED -200 // Default speed, may need a different one for the two pairs of motors
-#define MAX_SPEED -200 // Max Speed
+#define DEFAULT_SPEED 200 // Default speed, may need a different one for the two pairs of motors
 
 // Threshold for battery
 #define battery_threshold 200
@@ -32,13 +30,12 @@
 DRV8835MotorShield motors; // The H bridge for the motors
 Servo steering; // Handles the steering servo motor
 
-Ultrasonic left_range(32,33); // Trigger Pin, Echo Pin of left ranger
+Ultrasonic left_range(35,34); // Trigger Pin, Echo Pin of left ranger
 Ultrasonic right_range(28,29); // Trigger Pin, Echo Pin of right ranger
 Ultrasonic front_range(22,23); // Trigger Pin, Echo Pin of left ranger
 
-Battery battery(3400, 4600, A0, 3); // Pulled from Battery.h git's example
 
-QTRSensorsRC qtrrc((unsigned char[]) {2, 3, 4, 13}, NUM_SENSORS, TIMEOUT, EMITTER_PIN); // IR sensor, {} contain pins of the sensors
+//QTRSensorsRC qtrrc((unsigned char[]) {2, 3, 4, 13}, NUM_SENSORS, TIMEOUT, EMITTER_PIN); // IR sensor, {} contain pins of the sensors
 unsigned int sensors[NUM_SENSORS];
 
 //void sensor_calibration();
@@ -81,18 +78,18 @@ void loop(){
   leftRange = leftRange/5.0;
   rightRange = rightRange/5.0;
 
-//  Serial.println(frontRange);
-//  Serial.println(leftRange);
-//  Serial.println(rightRange);
+  Serial.println(frontRange); 
+  Serial.println(leftRange);
+  Serial.println(rightRange);
 //  forward();
   if (frontRange < safety || frontRange > oddMax)
   {
     Serial.println("Stop");
   		// if any point the ranger detects something very close in the front of it, it needs to stop.
-  	stopRobot();
-		delay(500);
-    long revThresh = threshold+ 30;
-    if (frontRange < revThresh)
+     stopRobot();
+     delay(500);
+  	long revThresh = threshold + 30;
+    while (frontRange < revThresh)
 		{
         frontRange = front_range.Ranging(CM); 
         for(int i = 0; i < 4; i++) {
@@ -102,18 +99,17 @@ void loop(){
       Serial.println(frontRange);
       Serial.println("Reverse\n");
   		reverse(); // reverse so you don't bump anything if you are blocked on all sides
+      if(leftRange > rightRange)
+      {
+        steering.write(0);
+      }
+      else if(rightRange > leftRange)
+      {
+        steering.write(180);
+      }
 			//	delay(500); // set the delay to whatever it takes for it
-		}
-           
+		}          
   }
-//	else if (frontRange > threshold)
-//	{
-//    Serial.println("Forward");
-//		// if everything's all clear, just keep moving!
-//    forward();
-//     // delay(1);
-//    
-//	}
 	else /*if (frontRange < threshold)*/
 	{
 		if(leftRange <= threshold &&  (leftRange > rightRange))
@@ -156,50 +152,55 @@ void loop(){
 				turnRight(); // if the right side is clearer, turn around using the right side
 				//delay(1000); // set the delay time that is equal to whatever time it takes to turn around. If the delay time is really long, you might do a 360!
 			}
+     
 		}
 	}
-  /*while (battery.level() < battery_threshold) // if the battery level is low!
-  {
-  	line_position = qtrrc.readLine(sensors, 1); // start reading those sensors
-  	follow_segment(); // go to line follower function
-  }*/
+  
 }
-/*
-//===================================================================================
-// LINE FOLLOWER SEGMENT
-//===================================================================================
-void follow_segment(){
-	// Since we're using white tape on black surface, we need to figure out what the
-	// LIGHT reflectance values are and set a threshold for that. This was just an example.
-	// Basically if we don't detect the white tape, you need to just keep moving forward.
-	if (sensors[0] < DARK && sensors[1] < DARK && sensors[2] < DARK &&
-      sensors[3] < DARK)
-	{
-	    // go straight
-	    forward();
-  	}
-  	else
-  	{
-  	 // Oh god, how do you do this with a separate steering motor??
-	  long int error = line_position - 2500;
-	  int motorSpeed = Kp * error + Kd * (error - last_error);
-	  last_error = error;
-
-	  int rightMotorSpeed = DEFAULT_SPEED + motorSpeed;
-	  int leftMotorSpeed = DEFAULT_SPEED - motorSpeed;
-
-	  set_motor(1, leftMotorSpeed);
-	  set_motor(0, rightMotorSpeed);
-	  
-		long int error = line_position - 2500;
-		int range_adj = Kp * error + Kd * (error-last_error);
-		last_error = error;
-
-		steering =
-	  
-	}
-}
-*/
+////===================================================================================
+//// LINE FOLLOWER SEGMENT
+////===================================================================================
+//void follow_segment(){
+//	// Since we're using white tape on black surface, we need to figure out what the
+//	// LIGHT reflectance values are and set a threshold for that. This was just an example.
+//	// Basically if we don't detect the white tape, you need to just keep moving forward.
+//	if (sensors[0] < DARK && sensors[1] < DARK && sensors[2] < DARK &&
+//      sensors[3] < DARK)
+//	  {
+//	    // go straight
+//	    forward();
+//  	}
+//  	else
+//  	{
+//  	 // Oh god, how do you do this with a separate steering motor??
+//		long int error = (line_position - 2500)/10;
+//		int steering_err = Kp * error + Kd * (error-last_error);
+//		last_error = error;
+//
+//    if (steering_err < 0)
+//    {
+//      steering_err = steering_err/10.0;
+//    }
+//    else if (steering_err > 0)
+//    {
+//      steering_err = steering_err/10.0;
+//    }
+//
+//    if (steering_err > 180)
+//    {
+//      steering_err = 90;
+//    }
+//    else if (steering_err < 0)
+//    {
+//      steering_err = -90;
+//    }
+//
+//    int adjusted = 90;
+//    adjusted = adjusted + steering_err;
+//    steering.write(middle);
+//	  
+//	}
+//}
 //===================================================================================
 // FUNCTIONS TO DRIVE CAR AND CALBIRATE SENSOR
 //===================================================================================
@@ -216,7 +217,7 @@ void forward() {
 	motors.setSpeeds(DEFAULT_SPEED, DEFAULT_SPEED); // DRV motors, drive motors forward // Toshiba hbridge motors, motors forward
 }
 void reverse() {
-  steering.write(180); // the steering wheels are straight
+  steering.write(0); // the steering wheels are straight
   motors.setSpeeds(-DEFAULT_SPEED, -DEFAULT_SPEED); // DRV motors, negative speed to reverse
 }
 
@@ -235,48 +236,3 @@ void stopRobot() { //Stop the robot!
 	steering.write(90); // the steering wheels are straight
 	motors.setSpeeds(0, 0); // all drive motors stopped
 }
-
-
-//===================================================================================
-// SETTING THOSE MOTOR SPEEDS
-//===================================================================================
-//void set_motor(int side, int motorspeed)
-//{
-//  if (motorspeed > MAX_SPEED ) motorspeed = MAX_SPEED; // limit top speed
-//
-//	if (side == 0) // May have to switch 0 and 1 for left and right motors
-//	{
-//		if (motorspeed < 0)
-//		{
-//			motors.setM1Speed(motorspeed);
-//		}
-//		if (motorspeed == 0)
-//		{
-//			motors.setM1Speed(motorspeed);
-//		}
-//		if ( motorspeed > 0)
-//		{
-//			motors.setM1Speed(motorspeed);
-//		}
-//	}
-//	else if (side == 1)
-// 	{
-//		if (motorspeed < 0)
-//		{
-//			motors.setM2Speed(motorspeed);
-//		}
-//		if (motorspeed == 0)
-//		{
-//			motors.setM2Speed(motorspeed);
-//		}
-//		if ( motorspeed > 0)
-//		{
-//			motors.setM2Speed(motorspeed);
-//		}
-// 	}
-// 	else
-// 	{
-// 		motors.setM1Speed(-motorspeed);
-// 		motors.setM2Speed(-motorspeed);
-// 	}
-//}
